@@ -26,7 +26,9 @@ class Lexer():
         self.current_char = self.text[self.pos]
     
     def error(self):
-        raise Exception("Invalid character")
+        #raise Exception("Invalid character")
+        print("Invalid character")
+        self.advance()
     
     def advance(self):
         self.pos += 1
@@ -73,7 +75,8 @@ class Parser():
         self.current_token = self.lexer.get_next_token()
     
     def error(self):
-        raise Exception("Invalid sintax")
+        print("Invalid sintax")
+        self.lexer.advance()
     
     def eat(self, token_type):
         if self.current_token.type == token_type:
