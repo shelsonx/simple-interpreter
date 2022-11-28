@@ -123,6 +123,11 @@ class Num(AST):
         self.token = token
         self.value = self.token.value
 
+class UnaryOp(AST):
+    def __init__(self, op, expr):
+        self.op = self.op = op
+        self.expr = expr
+
 
 class Parser(object):
     def __init__(self, lexer):
@@ -144,6 +149,14 @@ class Parser(object):
     
     def factor(self):
         token = self.current_token
+        if token.type == PLUS:
+            self.eat(PLUS)
+            node = UnaryOp(token, self.factor())
+            return node
+        if token.type == MINUS:
+            self.eat(MINUS)
+            node = UnaryOp(token, self.factor())
+            return node
         if token.type == INTEGER:
             self.eat(INTEGER)
             return Num(token)
@@ -188,7 +201,10 @@ class Parser(object):
         return node
     
     def parse(self):
-        return self.expr()
+        node = self.expr()
+        if self.current_token.type != EOF:
+            self.error()
+        return node
 
 ###############################################################################
 #                                                                             #
@@ -223,8 +239,17 @@ class Interpreter(NodeVisitor):
     def visit_Num(self, node):
         return node.value
     
+    def visit_UnaryOp(self, node):
+        op = node.op.type
+        if op == PLUS:
+            return +self.visit(node.expr)
+        elif op == MINUS:
+            return -self.visit(node.expr)
+    
     def interpret(self):
         tree = self.parser.parse()
+        if tree is None:
+                return ''
         return self.visit(tree)
     
 def main():
